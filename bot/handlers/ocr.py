@@ -14,7 +14,7 @@ from PIL import Image
 
 from ..config import Settings
 from ..db import Database, UserSettings
-from ..export import as_code_block, chunk_message
+from ..export import chunk_message, escape
 from ..ocr.base import OcrError, OcrResult
 from ..ocr.pipeline import OcrService
 from ..ocr.qrcode import decode_qr_codes
@@ -62,9 +62,10 @@ async def _download(bot: Bot, file_id: str) -> bytes:
 # --- delivery ----------------------------------------------------------------
 
 async def _deliver(message: Message, result: OcrResult) -> None:
-    """Just the text, chunked to fit Telegram's per-message cap. Nothing else."""
+    """Just the text, chunked to fit Telegram's per-message cap. Plain text —
+    no <pre> block, so there's no tap-to-copy affordance, just a normal message."""
     for chunk in chunk_message(result.text):
-        await message.reply(as_code_block(chunk))
+        await message.reply(escape(chunk))
 
 
 # --- main handlers -----------------------------------------------------------
